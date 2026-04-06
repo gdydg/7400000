@@ -340,12 +340,7 @@ def scrape_job():
             final_data.append(item)
             success_by_source_url.add(item["source_url"])
             
-    seen_ids = set()
     seen_source_urls = set(success_by_source_url)
-
-    for item in final_data:
-        if item.get("id"):
-            seen_ids.add(item["id"])
 
     # ====== 核心修复区：Playwright 资源管理 ======
     with sync_playwright() as p:
@@ -375,7 +370,7 @@ def scrape_job():
                 candidate_ids = collect_paps_ids_from_page_assets(page)
                 
                 for extracted_id in candidate_ids:
-                    if extracted_id not in seen_ids and url not in seen_source_urls:
+                    if url not in seen_source_urls:
                         stream_url = decode_stream_from_id(extracted_id)
                         if stream_url:
                             route_states[url]["resolved"] = True
@@ -392,7 +387,6 @@ def scrape_job():
                                 'away': info['away'],
                                 'route_label': info.get('route_label', '')
                             })
-                            seen_ids.add(extracted_id)
                             seen_source_urls.add(url)
                     if url in seen_source_urls:
                         break
